@@ -7,4 +7,49 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="AWindow.xaml.cs" />
+    <Compile Remove="LWindow.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="img\admin.png" />
+    <None Remove="img\closedEye.png" />
+    <None Remove="img\logout.png" />
+    <None Remove="img\openEye.png" />
+    <None Remove="img\user.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="AWindow.xaml" />
+    <Page Remove="LWindow.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="img\admin.png" />
+    <Resource Include="img\closedEye.png" />
+    <Resource Include="img\logout.png" />
+    <Resource Include="img\openEye.png" />
+    <Resource Include="img\user.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

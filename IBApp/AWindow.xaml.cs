@@ -10,25 +10,18 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace IBApp
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class ActionWindow : Window
     {
-        public MainWindow()
+        public ActionWindow()
         {
             InitializeComponent();
-            
-        }
-
-        private void cancel_Button_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
         }
     }
 }

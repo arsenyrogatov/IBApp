@@ -10,18 +10,25 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace IBApp
 {
     /// <summary>
-    /// Логика взаимодействия для NewPasswordWindow.xaml
+    /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class NewPasswordWindow : Window
+    public partial class LoginWindow : Window
     {
-        public NewPasswordWindow()
+        public LoginWindow()
         {
             InitializeComponent();
+            
+        }
+
+        private void cancel_Button_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }
