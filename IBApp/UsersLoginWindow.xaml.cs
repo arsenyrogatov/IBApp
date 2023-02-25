@@ -24,6 +24,30 @@ namespace IBApp
             InitializeComponent();
         }
 
+        /*
+        Arsenyrogatov
+        Qwerty07!
+         
+        user1
+        p!unXzFse8T
+
+        user2
+        E9@N6hwSnvn
+
+        user3
+        Un9#wvFWKWx
+
+        user4
+        TDyt$CS4ptq
+
+        user5
+        s94qtP%fys
+
+        user7
+        m#4T5jgUS%
+         
+         */
+
         private void Label_MouseUp(object sender, MouseButtonEventArgs e)
         {
             UsersRegistrationWindow usersRegistrationWindow = new UsersRegistrationWindow();
@@ -49,6 +73,10 @@ namespace IBApp
                 {
                     statuslabel.Text = "Неправильный пароль";
                 }
+                if (result == UserClass.OperationStatus.BlockedUser)
+                {
+                    statuslabel.Text = "Пользователь заблокирован";
+                }
                 if (result == UserClass.OperationStatus.Successful)
                 {
                     var uaw = new UsersActionsWindow();
@@ -70,14 +98,11 @@ namespace IBApp
                 statuslabel.Text = "Введите пароль!";
                 return false;
             }
-            var forbiddenSymbols = new string[] { ";", "\'", "--", "/*", "*/", "xp_" };
-            foreach (var forbiddenSymbol in forbiddenSymbols)
+            var msg = "";
+            if (!InputsCheckClass.loginCheck(loginbox.Text, out msg))
             {
-                if (loginbox.Text.Contains(forbiddenSymbol))
-                {
-                    statuslabel.Text = $"Логин содержит запрещенный символ {forbiddenSymbol}";
-                    return false;
-                }
+                statuslabel.Text = msg;
+                return false;
             }
             return true;
         }

@@ -1,11 +1,11 @@
-﻿<Window x:Class="IBApp.UsersRegistrationWindow"
+﻿<Window x:Class="IBApp.ChangeLoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:IBApp"
         mc:Ignorable="d"
-       Title="Регистрация" Height="260" Width="480" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" UseLayoutRounding="True">
+        Title="Смена логина" Height="250" Width="480" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" UseLayoutRounding="True">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
@@ -21,18 +21,20 @@
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <TextBlock Text="Логин" VerticalAlignment="Center"></TextBlock>
-            <TextBox x:Name="loginbox" Grid.Row="1" VerticalAlignment="Center" Height="22" />
-            <TextBlock Text="Пароль" Grid.Row="2" VerticalAlignment="Center"></TextBlock>
-            
-            <PasswordBox x:Name="pwdbox1" Grid.Row="3" VerticalAlignment="Center" Height="22" />
-            <TextBox x:Name="pwdbox1s" Grid.Row="3" VerticalAlignment="Center" Height="22" Visibility="Hidden"/>
-            
-            <TextBlock Text="Пароль еще раз" Grid.Row="4" VerticalAlignment="Center"></TextBlock>
+            <TextBlock Text="Старый логин" VerticalAlignment="Center"></TextBlock>
+            <TextBox x:Name="loginbox" Grid.Row="1" VerticalAlignment="Center" Height="22" IsReadOnly="True"/>
 
-            <PasswordBox x:Name="pwdbox2" Grid.Row="5" VerticalAlignment="Center" Height="22" />
-            <TextBox x:Name="pwdbox2s" Grid.Row="5" VerticalAlignment="Center" Height="22" Visibility="Hidden"/>
+            <TextBlock Text="Новый логин" Grid.Row="2" VerticalAlignment="Center"></TextBlock>
+
+            <TextBox x:Name="newloginbox" Grid.Row="3" VerticalAlignment="Center" Height="22"/>
+
+            <TextBlock Text="Пароль" Grid.Row="4" VerticalAlignment="Center"></TextBlock>
+
+            <PasswordBox x:Name="pwdbox1" Grid.Row="5" VerticalAlignment="Center" Height="22" />
+            <TextBox x:Name="pwdbox1s" Grid.Row="5" VerticalAlignment="Center" Height="22" Visibility="Hidden"/>
+
             
+
             <CheckBox Grid.Row="6" Content="Показать пароли" IsChecked="False" VerticalAlignment="Center" Checked="ShowPasswords" Unchecked="HidePasswords"></CheckBox>
         </Grid>
         <Border Grid.Row="1" Background="#FFF3EDFF">

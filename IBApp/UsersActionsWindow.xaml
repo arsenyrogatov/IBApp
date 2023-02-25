@@ -37,23 +37,61 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <Button Content="Поменять пароль" Height="22" Margin="10" HorizontalAlignment="Left" Width="120"/>
-            <Grid Grid.Row="1" Margin="0,0,10,10">
+            <Grid HorizontalAlignment="Left" Width="232" Margin="10,10,0,10" >
+                <Grid.RowDefinitions>
+                    <RowDefinition ></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="190"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
                     <ColumnDefinition></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <StackPanel Margin="10,0,10,0">
-                    <TextBlock Text="Пользователи" FontSize="16"></TextBlock>
-                    <TextBlock Text="Логин"></TextBlock>
-                    <TextBox Height="24"></TextBox>
-                    <TextBlock Text="Пароль" Margin="0,5,0,0"></TextBlock>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
-                        <PasswordBox Height="24" Margin="5,0,0,0"></PasswordBox>
-                        <Image Height="24" Width="24" Source="/img/closedEye.png"/>
-                    </StackPanel>
+                <TextBlock Text="Доступные действия" FontSize="16" Grid.ColumnSpan="2" Margin="0,0,0,10"/>
+                <Button Grid.Row="1" Content="Поменять пароль" Height="22" Click="ChangeCurrentUserPwd" Margin="0,0,2.5,0"/>
+                <Button Grid.Row="1" Grid.Column="2" Content="Поменять логин" Height="22" Click="ChangeCurrentUserLogin" Margin="2.5,0,0,0"/>
+            </Grid>
+            <Grid x:Name="AdminTools" Grid.Row="1" Margin="0,0,10,10" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="252"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Все пользователи" FontSize="16" Margin="10,0,0,5"/>
+                <StackPanel x:Name="adminToolsPanel" Grid.Row="1" Margin="10,0,10,0" IsEnabled="False">
+                    <TextBlock Text="Логин"/>
+                    <DockPanel FlowDirection="RightToLeft" HorizontalAlignment="Stretch" >
+                        <Button x:Name="admChangeLogin" Width="80" Content="Изменить" Margin="0,0,5,0" Height="22" Click="admChangeLogin_Click" ></Button>
+                        <TextBox x:Name="admuserlogin"></TextBox>
+                    </DockPanel>
+                    <TextBlock Text="Роль" Margin="0,5,0,0"/>
+                    <DockPanel FlowDirection="RightToLeft" HorizontalAlignment="Stretch" >
+                        <Button x:Name="admChangeRole" Width="80" Content="Изменить" Margin="0,0,5,0" Height="22" Click="admChangeRole_Click"></Button>
+                        <ComboBox x:Name="admuserrole">
+                            <ComboBoxItem Content="Пользователь"/>
+                            <ComboBoxItem Content="Администратор"/>
+                        </ComboBox>
+                    </DockPanel>
+                    <TextBlock Text="Блокировка" Margin="0,5,0,0"/>
+                    <Grid HorizontalAlignment="Stretch" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Блокировать" Margin="0,0,2.5,0" Height="22" Click="BlockUser" ></Button>
+                        <Button Grid.Column="1" Content="Разблокировать" Margin="2.5,0,0,0" Height="22" Click="UnblockUser" ></Button>
+                    </Grid>
                 </StackPanel>
-                <DataGrid Grid.Column="1" d:ItemsSource="{d:SampleData ItemCount=5}" IsReadOnly="True"/>
+                <DataGrid x:Name="usersdatagrid" Grid.Row="1" Grid.Column="1" IsReadOnly="True" AutoGenerateColumns="False" SelectionChanged="usersdatagrid_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Логин" Binding="{Binding Login, Mode=OneWay}"></DataGridTextColumn>
+                        <DataGridTextColumn Header="Роль" Binding="{Binding Role, Mode=OneWay}"></DataGridTextColumn>
+                        <DataGridCheckBoxColumn Header="Блокировка" Binding="{Binding Blocked, Mode=OneWay}"></DataGridCheckBoxColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
             </Grid>
         </Grid>
     </Grid>

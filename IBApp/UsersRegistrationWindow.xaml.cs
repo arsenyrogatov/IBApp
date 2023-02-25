@@ -48,6 +48,7 @@ namespace IBApp
                 if (regStatus == UserClass.OperationStatus.Successful)
                 {
                     MessageBox.Show("Вы успешно зарегистрированы!");
+                    Close();
                 }
             }
 
@@ -55,29 +56,9 @@ namespace IBApp
 
         private bool checkInputs ()
         {
-            if (loginbox.Text.Length < 3)
-            {
-                statuslabel.Text = "Логин должен быть больше 3 символов!";
-                return false;
-            }
-            if (loginbox.Text.Length > 20)
-            {
-                statuslabel.Text = "Логин должен быть меньше 20 символов!";
-                return false;
-            }
             if (pwdbox1.Password != pwdbox2.Password)
             {
                 statuslabel.Text = "Пароли не совпадают!";
-                return false;
-            }
-            if (pwdbox1.Password.Length < 8)
-            {
-                statuslabel.Text = "Пароль должен быть больше 8 символов!";
-                return false;
-            }
-            if (pwdbox1.Password.Length > 50)
-            {
-                statuslabel.Text = "Пароль должен быть меньше 50 символов!";
                 return false;
             }
 
@@ -87,35 +68,15 @@ namespace IBApp
                 return false;
             }
 
-            var forbiddenSymbols = new string[] { ";", "\'", "--", "/*", "*/", "xp_" };
-            foreach (var forbiddenSymbol in forbiddenSymbols)
+            string message;
+            if (!InputsCheckClass.loginCheck(loginbox.Text, out message))
             {
-                if (loginbox.Text.Contains(forbiddenSymbol))
-                {
-                    statuslabel.Text = $"Логин содержит запрещенный символ {forbiddenSymbol}";
-                    return false;
-                }
-            }
-
-            var engCapsRegex = new Regex(@"([A-Z])");
-            var rusCapsRegex = new Regex(@"([А-Я])");
-            if (!engCapsRegex.IsMatch(pwdbox1.Password) && !rusCapsRegex.IsMatch(pwdbox1.Password))
-            {
-                statuslabel.Text = "Пароль должен содержать прописные буквы!";
+                statuslabel.Text = message;
                 return false;
             }
-
-            var digitsRegex = new Regex(@"([0-9])");
-            if (!digitsRegex.IsMatch(pwdbox1.Password))
+            if (!InputsCheckClass.pwdCheck(pwdbox1.Password, out message))
             {
-                statuslabel.Text = "Пароль должен содержать цифры!";
-                return false;
-            }
-
-            var symbolsRegex = new Regex(@"([!,@,#,$,%,^,&,*,?,_,~])");
-            if (!symbolsRegex.IsMatch(pwdbox1.Password))
-            {
-                statuslabel.Text = "Пароль должен содержать спец символы!";
+                statuslabel.Text = message;
                 return false;
             }
 
