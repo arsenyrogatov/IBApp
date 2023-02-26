@@ -64,25 +64,29 @@ namespace IBApp
 
             if (CheckInputs())
             {
-                var result = UserClass.TryLogin(loginbox.Text.ToCharArray(), pwdbox.Password.ToCharArray());
-                if (result == UserClass.OperationStatus.LoginError)
+                CaptchaWindow captchaWindow = new CaptchaWindow();
+                captchaWindow.Closed += (object se, EventArgs e) =>
                 {
-                    statuslabel.Text = "Нет такого пользователя";
-                }
-                if (result == UserClass.OperationStatus.PwdError)
-                {
-                    statuslabel.Text = "Неправильный пароль";
-                }
-                if (result == UserClass.OperationStatus.BlockedUser)
-                {
-                    statuslabel.Text = "Пользователь заблокирован";
-                }
-                if (result == UserClass.OperationStatus.Successful)
-                {
-                    var uaw = new UsersActionsWindow();
-                    Close();
-                    uaw.Show();
-                }
+                    if (captchaWindow.isCapchaCorrect)
+                    {
+                        var result = UserClass.Login2(loginbox.Text.ToCharArray(), pwdbox.Password.ToCharArray());
+                        if (result == UserClass.OperationStatus.Successful)
+                        {
+                            var uaw = new UsersActionsWindow();
+                            Close();
+                            uaw.Show();
+                        }
+                        else
+                        {
+                            statuslabel.Text = UserClass.OperationStatusToString(result);
+                        }
+                    }
+                    else
+                    {
+                        statuslabel.Text = "Капча не пройдена";
+                    }
+                };
+                captchaWindow.ShowDialog();
             }
         }
 

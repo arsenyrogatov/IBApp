@@ -40,16 +40,25 @@ namespace IBApp
             statuslabel.Text = "";
             if (checkInputs())
             {
-                var regStatus = UserClass.TryRegister(loginbox.Text.ToCharArray(), pwdbox1.Password.ToCharArray());
-                if (regStatus == UserClass.OperationStatus.LoginError)
-                    statuslabel.Text = "Пользователь с таким логином уже есть!";
-                if (regStatus == UserClass.OperationStatus.DBError)
-                    statuslabel.Text = "Ошибка при обращении к серверу";
-                if (regStatus == UserClass.OperationStatus.Successful)
+                CaptchaWindow captchaWindow = new CaptchaWindow();
+                captchaWindow.Closed += (object se, EventArgs e) =>
                 {
-                    MessageBox.Show("Вы успешно зарегистрированы!");
-                    Close();
-                }
+                    if (captchaWindow.isCapchaCorrect)
+                    {
+                        var regStatus = UserClass.Register2(loginbox.Text.ToCharArray(), pwdbox1.Password.ToCharArray());
+
+                        if (regStatus == UserClass.OperationStatus.Successful)
+                        {
+                            MessageBox.Show("Вы успешно зарегистрированы!");
+                            Close();
+                        }
+                        else
+                        {
+                            statuslabel.Text = UserClass.OperationStatusToString(regStatus);
+                        }
+                    }
+                };
+                captchaWindow.ShowDialog();
             }
 
         }

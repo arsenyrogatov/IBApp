@@ -62,18 +62,26 @@ namespace IBApp
             statuslabel.Text = "";
             if (checkInputs())
             {
-                var regStatus = UserClass.ChangePwd(pwdbox0.Password.ToCharArray(), pwdbox1.Password.ToCharArray());
-                if (regStatus == UserClass.OperationStatus.PwdError)
-                    statuslabel.Text = "Неправильный старый пароль!";
-                if (regStatus == UserClass.OperationStatus.DBError)
-                    statuslabel.Text = "Ошибка при обращении к серверу";
-                if (regStatus == UserClass.OperationStatus.BlockedUser)
-                    statuslabel.Text = "Пользователь заблокирован";
-                if (regStatus == UserClass.OperationStatus.Successful)
+                CaptchaWindow captchaWindow = new CaptchaWindow();
+                captchaWindow.Closed += (object se, EventArgs e) =>
                 {
-                    MessageBox.Show("Пароль успешно изменен!");
-                    Close();
-                }
+                    if (captchaWindow.isCapchaCorrect)
+                    {
+                        var regStatus = UserClass.ChangePwd2(pwdbox0.Password.ToCharArray(), pwdbox1.Password.ToCharArray());
+                        if (regStatus == UserClass.OperationStatus.PwdError)
+                            statuslabel.Text = "Неправильный старый пароль!";
+                        if (regStatus == UserClass.OperationStatus.DBError)
+                            statuslabel.Text = "Ошибка при обращении к серверу";
+                        if (regStatus == UserClass.OperationStatus.BlockedUser)
+                            statuslabel.Text = "Пользователь заблокирован";
+                        if (regStatus == UserClass.OperationStatus.Successful)
+                        {
+                            MessageBox.Show("Пароль успешно изменен!");
+                            Close();
+                        }
+                    }
+                };
+                captchaWindow.ShowDialog();
             }
         }
 

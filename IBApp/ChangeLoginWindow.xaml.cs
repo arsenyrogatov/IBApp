@@ -35,15 +35,23 @@ namespace IBApp
 
             if (CheckInputs())
             {
-                var chStatus = UserClass.ChangeLogin(newloginbox.Text.ToCharArray(), pwdbox1.Password.ToCharArray());
-
-                if (chStatus == UserClass.OperationStatus.Successful)
+                CaptchaWindow captchaWindow = new CaptchaWindow();
+                captchaWindow.Closed += (object se, EventArgs e) =>
                 {
-                    MessageBox.Show("Логин успешно изменен!");
-                    Close();
-                }
-                else
-                    statuslabel.Text = UserClass.OperationStatusToString(chStatus);
+                    if (captchaWindow.isCapchaCorrect)
+                    {
+                        var chStatus = UserClass.ChangeLogin2(newloginbox.Text.ToCharArray(), pwdbox1.Password.ToCharArray());
+
+                        if (chStatus == UserClass.OperationStatus.Successful)
+                        {
+                            MessageBox.Show("Логин успешно изменен!");
+                            Close();
+                        }
+                        else
+                            statuslabel.Text = UserClass.OperationStatusToString(chStatus);
+                    }
+                };
+                captchaWindow.ShowDialog();
             }
         }
 

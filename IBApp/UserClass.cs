@@ -42,75 +42,83 @@ namespace IBApp
             return "";
         }
 
-        private static OperationStatus Authorization(char[] login, char[] pwd)
+        private static OperationStatus Authorization2(char[] login, char[] pwd)
         {
             try
             {
-                System.Data.SqlClient.SqlCommand GetUserSalt = new System.Data.SqlClient.SqlCommand("GetUserSalt", DBConnection.connection);
-                GetUserSalt.CommandType = System.Data.CommandType.StoredProcedure;
+                System.Data.SqlClient.SqlCommand AuthorizeUser = new System.Data.SqlClient.SqlCommand("AuthorizeUser", DBConnection.connection);
+                AuthorizeUser.CommandType = System.Data.CommandType.StoredProcedure;
 
-                GetUserSalt.Parameters.Add("@login", System.Data.SqlDbType.NVarChar, 50);
-                GetUserSalt.Parameters["@login"].Value = login;
+                AuthorizeUser.Parameters.Add("@login", System.Data.SqlDbType.NVarChar, 50);
+                AuthorizeUser.Parameters["@login"].Value = login;
 
-                GetUserSalt.Parameters.Add("@usalt", System.Data.SqlDbType.VarBinary, 256);
-                GetUserSalt.Parameters["@usalt"].Direction = System.Data.ParameterDirection.Output;
+                AuthorizeUser.Parameters.Add("@data", System.Data.SqlDbType.VarBinary, 256);
+                AuthorizeUser.Parameters["@data"].Value = CryptoClass.HashSome(Encoding.UTF8.GetBytes(pwd));
 
-                GetUserSalt.Parameters.Add("@response", System.Data.SqlDbType.Int);
-                GetUserSalt.Parameters["@response"].Direction = System.Data.ParameterDirection.Output;
+                AuthorizeUser.Parameters.Add("@response", System.Data.SqlDbType.Int);
+                AuthorizeUser.Parameters["@response"].Direction = System.Data.ParameterDirection.Output;
 
                 using (DBConnection connection = new DBConnection())
                 {
-                    GetUserSalt.ExecuteNonQuery();
+                    AuthorizeUser.ExecuteNonQuery();
                 }
 
-                if (GetUserSalt.Parameters["@usalt"].Value == System.DBNull.Value)
+                switch (Convert.ToInt32(AuthorizeUser.Parameters["@response"].Value))
                 {
-                    if (Convert.ToInt32(GetUserSalt.Parameters["@response"].Value) == 0)
-                        return OperationStatus.BlockedUser; //пользователь заблокирован
-                    else
-                        return OperationStatus.LoginError; //неправильный логин
-                }
-                else
-                {
-                    var salt = (byte[])GetUserSalt.Parameters["@usalt"].Value;
-                    var hash = CryptoClass.HashSome(salt.Concat(Encoding.UTF8.GetBytes(pwd)).ToArray());
-
-                    System.Data.SqlClient.SqlCommand CheckUserPwd = new System.Data.SqlClient.SqlCommand("CheckUserPwd", DBConnection.connection);
-                    CheckUserPwd.CommandType = System.Data.CommandType.StoredProcedure;
-
-                    CheckUserPwd.Parameters.Add("@data", System.Data.SqlDbType.VarBinary, hash.Length);
-                    CheckUserPwd.Parameters["@data"].Value = hash;
-                    CheckUserPwd.Parameters.Add("@response", System.Data.SqlDbType.Int);
-                    CheckUserPwd.Parameters["@response"].Direction = System.Data.ParameterDirection.Output;
-
-                    using (DBConnection connection = new DBConnection())
-                    {
-                        CheckUserPwd.ExecuteNonQuery();
-                    }
-
-                    if (Convert.ToInt32(CheckUserPwd.Parameters["@response"].Value) == 0)
-                    {
-                        return OperationStatus.PwdError; //неправильный пароль
-                    }
-                    else
-                    {
-                        return OperationStatus.Successful; //успешно
-                    }
+                    case -1: return OperationStatus.PwdError;
+                    case -2: return OperationStatus.LoginError;
+                    case -3: return OperationStatus.BlockedUser;
+                    case 0: return OperationStatus.Successful;
                 }
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Authorization Error: {ex.Message.ToString()}");
+                Console.WriteLine($"Authorization2 Error: {ex.Message.ToString()}");
             }
             return OperationStatus.DBError; //ошибка при подключении к бд
         }
 
-        internal static OperationStatus TryLogin(char[] login, char[] pwd)
+        internal static OperationStatus Register2(char[] login, char[] pwd)
         {
             try
             {
-                var authorizationStatus = Authorization(login, pwd);
+                System.Data.SqlClient.SqlCommand RegisterUser = new System.Data.SqlClient.SqlCommand("RegisterUser", DBConnection.connection);
+                RegisterUser.CommandType = System.Data.CommandType.StoredProcedure;
+
+                RegisterUser.Parameters.Add("@login", System.Data.SqlDbType.NVarChar, 50);
+                RegisterUser.Parameters["@login"].Value = login;
+
+                RegisterUser.Parameters.Add("@data", System.Data.SqlDbType.VarBinary, 256);
+                RegisterUser.Parameters["@data"].Value = CryptoClass.HashSome(Encoding.UTF8.GetBytes(pwd));
+
+                RegisterUser.Parameters.Add("@response", System.Data.SqlDbType.Int);
+                RegisterUser.Parameters["@response"].Direction = System.Data.ParameterDirection.Output;
+
+                using (DBConnection connection = new DBConnection())
+                {
+                    RegisterUser.ExecuteNonQuery();
+                }
+
+                switch (Convert.ToInt32(RegisterUser.Parameters["@response"].Value))
+                {
+                    case -1: return OperationStatus.LoginExists;
+                    case 0: return OperationStatus.Successful;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Authorization2 Error: {ex.Message.ToString()}");
+            }
+            return OperationStatus.DBError; //ошибка при подключении к бд
+        }
+
+        internal static OperationStatus Login2(char[] login, char[] pwd)
+        {
+            try
+            {
+                var authorizationStatus = Authorization2(login, pwd);
                 if (authorizationStatus != OperationStatus.Successful)
                 {
                     return authorizationStatus;
@@ -125,7 +133,7 @@ namespace IBApp
 
                     GetUserInfo.Parameters.Add("@role", System.Data.SqlDbType.Int);
                     GetUserInfo.Parameters["@role"].Direction = System.Data.ParameterDirection.Output;
-                    
+
                     using (DBConnection connection = new DBConnection())
                     {
                         GetUserInfo.ExecuteNonQuery();
@@ -141,189 +149,53 @@ namespace IBApp
                 Console.WriteLine($"Login Error: {ex.Message.ToString()}");
             }
             return OperationStatus.DBError;
-        }
+        } 
 
-        internal static OperationStatus TryRegister(char[] login, char[] pwd)
+        internal static OperationStatus ChangePwd2(char[] oldPwd, char[] newPwd)
         {
             try
             {
+                System.Data.SqlClient.SqlCommand ChangePassword = new System.Data.SqlClient.SqlCommand("ChangePassword", DBConnection.connection);
+                ChangePassword.CommandType = System.Data.CommandType.StoredProcedure;
 
-                System.Data.SqlClient.SqlCommand CheckNewLogin = new System.Data.SqlClient.SqlCommand("CheckNewLogin", DBConnection.connection);
-                CheckNewLogin.CommandType = System.Data.CommandType.StoredProcedure;
+                ChangePassword.Parameters.Add("@login", System.Data.SqlDbType.NVarChar, 50);
+                ChangePassword.Parameters["@login"].Value = Login;
 
-                CheckNewLogin.Parameters.Add("@login", System.Data.SqlDbType.NVarChar, 50);
-                CheckNewLogin.Parameters["@login"].Value = login;
+                ChangePassword.Parameters.Add("@olddata", System.Data.SqlDbType.VarBinary, 256);
+                ChangePassword.Parameters["@olddata"].Value = CryptoClass.HashSome(Encoding.UTF8.GetBytes(oldPwd));
 
-                CheckNewLogin.Parameters.Add("@response", System.Data.SqlDbType.Int);
-                CheckNewLogin.Parameters["@response"].Direction = System.Data.ParameterDirection.Output;
+                ChangePassword.Parameters.Add("@newdata", System.Data.SqlDbType.VarBinary, 256);
+                ChangePassword.Parameters["@newdata"].Value = CryptoClass.HashSome(Encoding.UTF8.GetBytes(newPwd));
+
+                ChangePassword.Parameters.Add("@response", System.Data.SqlDbType.Int);
+                ChangePassword.Parameters["@response"].Direction = System.Data.ParameterDirection.Output;
 
                 using (DBConnection connection = new DBConnection())
                 {
-                    CheckNewLogin.ExecuteNonQuery();
+                    ChangePassword.ExecuteNonQuery();
                 }
 
-                if (Convert.ToInt32(CheckNewLogin.Parameters["@response"].Value) == 1)
-                    return OperationStatus.LoginError;
-                else
+                switch (Convert.ToInt32(ChangePassword.Parameters["@response"].Value))
                 {
-                    bool newHashUnique = false;
-                    byte[] newsalt;
-                    do
-                    {
-                        newsalt = CryptoClass.GetSalt();
-                        var newhash = CryptoClass.HashSome(newsalt.Concat(Encoding.UTF8.GetBytes(pwd)).ToArray());
-
-                        System.Data.SqlClient.SqlCommand AddPwdHash = new System.Data.SqlClient.SqlCommand("AddPwdHash", DBConnection.connection);
-                        AddPwdHash.CommandType = System.Data.CommandType.StoredProcedure;
-
-                        AddPwdHash.Parameters.Add("@hash", System.Data.SqlDbType.VarBinary, newhash.Length);
-                        AddPwdHash.Parameters["@hash"].Value = newhash;
-
-                        AddPwdHash.Parameters.Add("@response", System.Data.SqlDbType.Int);
-                        AddPwdHash.Parameters["@response"].Direction = System.Data.ParameterDirection.Output;
-
-                        using (DBConnection connection = new DBConnection())
-                        {
-                            AddPwdHash.ExecuteNonQuery();
-                        }
-
-                        newHashUnique = Convert.ToInt32(AddPwdHash.Parameters["@response"].Value) == 1;
-                    }
-                    while (!newHashUnique);
-
-                    System.Data.SqlClient.SqlCommand UpdateUserSalt = new System.Data.SqlClient.SqlCommand("UpdateUserSalt", DBConnection.connection);
-                    UpdateUserSalt.CommandType = System.Data.CommandType.StoredProcedure;
-
-                    UpdateUserSalt.Parameters.Add("@login", System.Data.SqlDbType.NVarChar, 50);
-                    UpdateUserSalt.Parameters["@login"].Value = login;
-
-                    UpdateUserSalt.Parameters.Add("@salt", System.Data.SqlDbType.VarBinary, 256);
-                    UpdateUserSalt.Parameters["@salt"].Value = newsalt;
-
-                    using (DBConnection connection = new DBConnection())
-                    {
-                        UpdateUserSalt.ExecuteNonQuery();
-                    }
-
-                    Login = new string(login);
-                    UserRole = Role.Regular;
-
-                    return OperationStatus.Successful;
+                    case -1: return OperationStatus.PwdError;
+                    case -2: return OperationStatus.LoginError;
+                    case -3: return OperationStatus.BlockedUser;
+                    case 0: return OperationStatus.Successful;
                 }
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Registration Error: {ex.Message.ToString()}");
+                Console.WriteLine($"ChangePwd2 Error: {ex.Message.ToString()}");
             }
-            return OperationStatus.DBError;
+            return OperationStatus.DBError; //ошибка при подключении к бд
         }
 
-        internal static OperationStatus ChangePwd(char[] oldPwd, char[] newPwd)
+        internal static OperationStatus ChangeLogin2(char[] newlogin, char[] pwd)
         {
             try
             {
-                System.Data.SqlClient.SqlCommand GetUserSalt = new System.Data.SqlClient.SqlCommand("GetUserSalt", DBConnection.connection);
-                GetUserSalt.CommandType = System.Data.CommandType.StoredProcedure;
-
-                GetUserSalt.Parameters.Add("@login", System.Data.SqlDbType.NVarChar, 50);
-                GetUserSalt.Parameters["@login"].Value = Login;
-
-                GetUserSalt.Parameters.Add("@usalt", System.Data.SqlDbType.VarBinary, 256);
-                GetUserSalt.Parameters["@usalt"].Direction = System.Data.ParameterDirection.Output;
-
-                GetUserSalt.Parameters.Add("@response", System.Data.SqlDbType.Int);
-                GetUserSalt.Parameters["@response"].Direction = System.Data.ParameterDirection.Output;
-
-                using (DBConnection connection = new DBConnection())
-                {
-                    GetUserSalt.ExecuteNonQuery();
-                }
-
-                if (GetUserSalt.Parameters["@usalt"].Value == System.DBNull.Value)
-                {
-                    if (Convert.ToInt32(GetUserSalt.Parameters["@response"].Value) == 0)
-                        return OperationStatus.BlockedUser;
-                    else
-                        return OperationStatus.LoginError;
-                }
-                else
-                {
-                    var salt = (byte[])GetUserSalt.Parameters["@usalt"].Value;
-                    var hash = CryptoClass.HashSome(salt.Concat(Encoding.UTF8.GetBytes(oldPwd)).ToArray());
-
-                    System.Data.SqlClient.SqlCommand RemovePwdHash = new System.Data.SqlClient.SqlCommand("RemovePwdHash", DBConnection.connection);
-                    RemovePwdHash.CommandType = System.Data.CommandType.StoredProcedure;
-
-                    RemovePwdHash.Parameters.Add("@hash", System.Data.SqlDbType.VarBinary, hash.Length);
-                    RemovePwdHash.Parameters["@hash"].Value = hash;
-
-                    RemovePwdHash.Parameters.Add("@response", System.Data.SqlDbType.Int);
-                    RemovePwdHash.Parameters["@response"].Direction = System.Data.ParameterDirection.Output;
-
-                    using (DBConnection connection = new DBConnection())
-                    {
-                        RemovePwdHash.ExecuteNonQuery();
-                    }
-
-                    if (Convert.ToInt32(RemovePwdHash.Parameters["@response"].Value) == -1)
-                        return OperationStatus.PwdError;
-                    else
-                    {
-                        bool newHashUnique = false;
-                        byte[] newsalt;
-                        do
-                        {
-                            newsalt = CryptoClass.GetSalt();
-                            var newhash = CryptoClass.HashSome(newsalt.Concat(Encoding.UTF8.GetBytes(newPwd)).ToArray());
-
-                            System.Data.SqlClient.SqlCommand AddPwdHash = new System.Data.SqlClient.SqlCommand("AddPwdHash", DBConnection.connection);
-                            AddPwdHash.CommandType = System.Data.CommandType.StoredProcedure;
-
-                            AddPwdHash.Parameters.Add("@hash", System.Data.SqlDbType.VarBinary, newhash.Length);
-                            AddPwdHash.Parameters["@hash"].Value = newhash;
-
-                            AddPwdHash.Parameters.Add("@response", System.Data.SqlDbType.Int);
-                            AddPwdHash.Parameters["@response"].Direction = System.Data.ParameterDirection.Output;
-
-                            using (DBConnection connection = new DBConnection())
-                            {
-                                AddPwdHash.ExecuteNonQuery();
-                            }
-
-                            newHashUnique = Convert.ToInt32(AddPwdHash.Parameters["@response"].Value) == 1;
-                        }
-                        while (!newHashUnique);
-
-                        System.Data.SqlClient.SqlCommand UpdateUserSalt = new System.Data.SqlClient.SqlCommand("UpdateUserSalt", DBConnection.connection);
-                        UpdateUserSalt.CommandType = System.Data.CommandType.StoredProcedure;
-
-                        UpdateUserSalt.Parameters.Add("@login", System.Data.SqlDbType.NVarChar, 50);
-                        UpdateUserSalt.Parameters["@login"].Value = Login;
-
-                        UpdateUserSalt.Parameters.Add("@salt", System.Data.SqlDbType.VarBinary, 256);
-                        UpdateUserSalt.Parameters["@salt"].Value = newsalt;
-
-                        using (DBConnection connection = new DBConnection())
-                        {
-                            UpdateUserSalt.ExecuteNonQuery();
-                        }
-                        return OperationStatus.Successful;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Pwd change error {ex.Message}");
-            }
-            return OperationStatus.DBError;
-        }
-
-        internal static OperationStatus ChangeLogin(char[] newlogin, char[] pwd)
-        {
-            try
-            {
-                var authorizationStatus = Authorization(Login.ToCharArray(), pwd);
+                var authorizationStatus = Authorization2(Login.ToCharArray(), pwd);
                 if (authorizationStatus != OperationStatus.Successful)
                 {
                     return authorizationStatus;
